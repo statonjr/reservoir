@@ -12,12 +12,19 @@ module Reservoir
     def count
       DealershipNode.find(:type => "dealership").count
     end
+
+    def find_by_code(dealership_request)
+      puts DealershipNode.all.map { |d| d.props }
+      DealershipNode.all.select { |d| d.three_letter_code == dealership_request.dealership.three_letter_code }.first
+    end
   end
 
   class DealershipNode
     include Neo4j::NodeMixin
+    rule :all
     property :identifier
     property :type, :index => :exact
+    property :three_letter_code, :index => :exact
     # property :name
     # property :lifecycle
     # has_n(:franchises).to(Dealership, :franchise)
