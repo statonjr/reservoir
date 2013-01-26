@@ -13,4 +13,8 @@ platform :mri_19 do
   gem 'pg'
 end
 
+group :development do
+  gem 'pry'
+end
+
 gemspec

@@ -1,1 +1,1 @@
-require 'lib/reservoir/dealership/neo4j_repository'
+require_relative 'reservoir/repository/in_memory_repository'
