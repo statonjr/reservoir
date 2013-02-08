@@ -15,7 +15,11 @@ end
 
 group :development do
   gem 'pry'
-  gem 'geminbox'
+  gem 'geminabox'
+end
+
+group :test do
+  gem 'rspec'
 end
 
 gemspec
