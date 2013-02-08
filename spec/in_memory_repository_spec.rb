@@ -7,77 +7,120 @@ describe Reservoir::InMemoryRepository do
     repo.empty
   end
 
-  describe '#add' do
-    it 'adds the entity in the request' do
-      request = double("Motor::Request", :context => {:identifier => 'a1b2c3', :kind => :dealership})
-      response = repo.add(request)
-      expect(response).to be_kind_of(Hash)
+  describe '#save' do
+    it 'accepts a hash' do
+      request = {:key => 'a1b2c3', :kind => :dealership}
+      expect{ repo.save(request) }.to_not raise_exception
+    end
+    it 'creates a key if none given' do
+      request = {:kind => :dealership}
+      result = repo.save(request)
+      expect(result[:key]).to_not be_nil
+    end
+    it 'raises ArgumentError if no kind' do
+      request = {:key => 'a1b2c3'}
+      expect { repo.save(request) }.to raise_error(ArgumentError)
+    end
+    it 'returns a hash with key, kind, created if no value given' do
+      request = {:key => 'a1b2c3', :kind => :dealership}
+      result = repo.save(request)
+      expect(result[:key]).to_not be_nil
+      expect(result[:kind]).to_not be_nil
+      expect(result[:created]).to_not be_nil
+    end
+    it 'returns a hash with key, kind, created, value if value given' do
+      request = {:kind => :dealership, :name => 'Hendrick BMW'}
+      result = repo.save(request)
+      expect(result[:key]).to_not be_nil
+      expect(result[:kind]).to_not be_nil
+      expect(result[:created]).to_not be_nil
+      expect(result[:name]).to_not be_nil
+    end
+    it 'does not overwrite keys' do
+      request = {:kind => :dealership, :name => 'Hendrick BMW', :key => '1234bc'}
+      result1 = repo.save(request)
+      request2 = {:kind => :dealership, :name => 'Hendrick BMW Northlake', :key => '1234bc'}
+      expect{ repo.save(request2) }.to_not raise_exception
     end
   end
 
-  describe "#count" do
-    it 'returns to proper count of entities of a specific kind' do
-      request = double("Motor::Request", :context => {:identifier => 'a1b2c3', :kind => :dealership})
-      repo.add(request)
-      expect(repo.count).to eq(1)
+  describe "#find_by_key" do
+    it 'accepts a key' do
+      expect{ repo.find_by_key('1234bc') }.to_not raise_exception
     end
-  end
-
-  describe "#all" do
-    it 'returns all entities' do
-      request = double("Motor::Request", :context => {:identifier => 'a1b2c3', :kind => :dealership})
-      repo.add(request)
-      request2 = double("Motor::Request", :context => {:identifier => 'd4e5c6', :kind => :vehicle})
-      repo.add(request2)
-      expect(repo.all.count).to eq(2)
+    it 'raises ArgumentError if no key' do
+      expect{ repo.find_by_key }.to raise_error(ArgumentError)
     end
-  end
-
-  describe "#find" do
-    it 'accepts a Motor::Request' do
-      request = Motor::Request.build({:identifier => 'a1b2c3', :kind => :dealership})
-      repo.add(request)
-      expect{ repo.find(request) }.to_not raise_exception
+    it 'returns a hash' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.find_by_key('a1b2c3')
+      expect(result).to be_kind_of(Array)
     end
-    it 'raises ArgumentError if argument is not a Motor::Request' do
-      request = double("Motor::Dealership")
-      expect { repo.find(request) }.to raise_error(ArgumentError)
-    end
-    it 'returns an Enumerable' do
-      request = Motor::Request.build({:identifier => 'a1b2c3', :kind => :dealership})
-      request2 = Motor::Request.build({:identifier => 'a1b2c4', :kind => :dealership})
-      repo.add(request)
-      repo.add(request2)
-      entity = repo.find(request)
-      expect(entity).to be_kind_of(Enumerable)
-    end
-    it 'returns the right number of entities' do
-      request = Motor::Request.build({:identifier => 'a1b2c3', :kind => :dealership})
-      request2 = Motor::Request.build({:identifier => 'a1b2c3', :kind => :vehicle})
-      repo.add(request)
-      repo.add(request2)
-      entity = repo.find(request)
-      expect(entity.length).to eq(2)
+    it 'returns the right entity by key' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.find_by_key('a1b2c3').first
+      expect(result[:key]).to eq('a1b2c3')
     end
   end
 
   describe "#find_by_kind" do
-    it 'accepts a Motor::Request' do
-      request = Motor::Request.build({:identifier => 'a1b2c3', :kind => :dealership})
-      repo.add(request)
-      expect { repo.find_by_kind(request) }.to_not raise_exception
+    it 'accepts a kind' do
+      expect{ repo.find_by_kind(:dealership) }.to_not raise_exception
     end
-    it 'raises ArgumentError if argument is not a Motor::Request' do
-      request = double("Motor::Dealership")
-      expect { repo.find_by_kind(request) }.to raise_error(ArgumentError)
+    it 'raises ArgumentError if no kind' do
+      expect{ repo.find_by_kind }.to raise_error(ArgumentError)
     end
-    it 'returns the requested entity' do
-      request = Motor::Request.build({:identifier => 'a1b2c3', :kind => :dealership})
-      request2 = Motor::Request.build({:identifier => 'a1b2c3', :kind => :vehicle})
-      repo.add(request)
-      repo.add(request2)
-      entity = repo.find_by_kind(request)
-      expect(entity).to eq([{:identifier => 'a1b2c3',:kind => :dealership}])
+    it 'returns a hash' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.find_by_kind(:dealership)
+      expect(result).to be_kind_of(Array)
+    end
+    it 'returns the right kind of entity' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.find_by_kind(:dealership)
+      expect(result.first[:kind]).to eq(:dealership)
+    end
+    it 'returns the right number of entities' do
+      bmw = {:kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(bmw)
+      northlake = {:kind => :dealership, :name => "Hendrick BMW Northlake"}
+      repo.save(northlake)
+      result = repo.find_by_kind(:dealership)
+      expect(result.length).to eq(2)
+    end
+  end
+
+  describe '#delete_by_key' do
+    it 'accepts a key' do
+      expect{ repo.delete_by_key('1234ab') }.to_not raise_exception
+    end
+    it 'raises ArgumentError if no key' do
+      expect{ repo.delete_by_key }.to raise_error(ArgumentError)
+    end
+    it 'returns the right entity by key with :deleted => true' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.delete_by_key('a1b2c3')
+      expect(result.first[:deleted]).to be_true
+    end
+  end
+
+  describe '#delete_by_kind' do
+    it 'accepts a kind' do
+      expect{ repo.delete_by_kind(:dealership) }.to_not raise_exception
+    end
+    it 'raises ArgumentError if no kind' do
+      expect{ repo.delete_by_kind }.to raise_error(ArgumentError)
+    end
+    it 'returns the right kind of entity with :deleted => true' do
+      request = {:key => 'a1b2c3', :kind => :dealership, :name => "Hendrick BMW"}
+      repo.save(request)
+      result = repo.delete_by_kind(:dealership)
+      expect(result.first[:deleted]).to be_true
     end
   end
 end
