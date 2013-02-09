@@ -5,7 +5,13 @@ Sequel::Model.db = DB
 
 DB.create_table?(:dealerships) do
   primary_key :id
-  column :identifier, String
+  column :key, String
+  column :name, String
+  column :created, Bignum
+  column :deleted, FalseClass, :default => false
 end
 
-require 'lib/reservoir/dealership/sequel_repository'
+DB.create_table?(:vehicles) do
+  primary_key :id
+  column :key, String
+end
