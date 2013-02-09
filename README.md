@@ -28,7 +28,7 @@ repo.save({:kind => :dealership, :name => 'Hendrick BMW'})
 "Updating" creates a new value with a newer timestamp
 
 ```ruby
-repo.save({:kind => :dealership, :key => 'abc123', :name => "Hendrick BMW Northlake"})
+repo.save({:kind => :dealership, :key => 'dealership-abc-123', :name => "Hendrick BMW Northlake"})
 # => {:kind => "dealership", :name => "Hendrick BMW Northlake", :key => "dealership-abc-123", :created => 20130209000000}
 ```
 
