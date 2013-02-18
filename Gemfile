@@ -2,7 +2,6 @@
 source 'https://rubygems.org'
 
 gem 'motor', :path => '../motor'
-gem 'sequel'
 
 platform :jruby do
   gem "neo4j"
